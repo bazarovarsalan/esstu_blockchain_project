@@ -14,6 +14,10 @@ name = "round-robin-quorum-server"
 path = "src/main.rs"
 
 [[bin]]
+name = "round-robin-quorum"
+path = "src/main.rs"
+
+[[bin]]
 name = "experiment"
 path = "src/bin/experiment.rs"
 
