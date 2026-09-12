@@ -1,5 +1,4 @@
 use std::sync::Arc;
-use std::path::PathBuf;
 
 use axum::{
     Json, Router,
@@ -12,7 +11,6 @@ use serde::Serialize;
 use tokio::sync::RwLock;
 use tower_http::{
     cors::{Any, CorsLayer},
-    services::{ServeDir, ServeFile},
     trace::TraceLayer,
 };
 
@@ -75,21 +73,8 @@ impl IntoResponse for ApiError {
 
 pub fn app(network: Network) -> Router {
     let state = Arc::new(RwLock::new(network));
-    
-    // Try multiple possible paths for the frontend dist
-    let dist_paths = vec![
-        PathBuf::from("/app/frontend/dist"),
-        PathBuf::from("frontend/dist"),
-        PathBuf::from("./frontend/dist"),
-    ];
-    
-    let dist_dir = dist_paths.into_iter()
-        .find(|p| p.exists())
-        .unwrap_or_else(|| PathBuf::from("/app/frontend/dist"));
-    
-    let fallback_path = dist_dir.join("index.html");
-    
     Router::new()
+        .route("/", get(root))
         .route("/api/health", get(health))
         .route("/api/state", get(get_state))
         .route("/api/integrity", get(get_integrity))
@@ -100,10 +85,6 @@ pub fn app(network: Network) -> Router {
         .route("/api/validators/{id}/status", post(set_validator_status))
         .route("/api/demo/reset", post(reset))
         .route("/api/demo/scenarios/{name}", post(run_scenario))
-        .fallback_service(
-            ServeDir::new(&dist_dir)
-                .not_found_service(ServeFile::new(&fallback_path)),
-        )
         .layer(
             CorsLayer::new()
                 .allow_origin(Any)
@@ -112,6 +93,26 @@ pub fn app(network: Network) -> Router {
         )
         .layer(TraceLayer::new_for_http())
         .with_state(state)
+}
+
+async fn root() -> Json<serde_json::Value> {
+    Json(serde_json::json!({
+        "status": "ok",
+        "service": "RoundRobinQuorum API",
+        "scope": "educational single-process simulation",
+        "endpoints": {
+            "health": "GET /api/health",
+            "state": "GET /api/state",
+            "integrity": "GET /api/integrity",
+            "block": "GET /api/blocks/{height}",
+            "create_transaction": "POST /api/transactions",
+            "submit_transaction": "POST /api/transactions/submit",
+            "produce_block": "POST /api/consensus/produce",
+            "set_validator": "POST /api/validators/{id}/status",
+            "reset": "POST /api/demo/reset",
+            "scenario": "POST /api/demo/scenarios/{name}"
+        }
+    }))
 }
 
 async fn health() -> Json<serde_json::Value> {
