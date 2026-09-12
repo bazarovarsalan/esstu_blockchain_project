@@ -1,6 +1,7 @@
 [build]
 builder = "railpack"
-cmd = "cd frontend && npm ci && npm run build && cd .. && cargo build --release && mkdir -p bin && cp target/release/round-robin-quorum bin/"
+cmd = "cd frontend && npm ci && npm run build && cd .. && cargo build --release && mkdir -p bin && cp target/release/round-robin-quorum bin/ && cp -r frontend/dist bin/"
 
 [deploy]
-startCommand = "round-robin-quorum"
+startCommand = "cd /app && round-robin-quorum"
+
