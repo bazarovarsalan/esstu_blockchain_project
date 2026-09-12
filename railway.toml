@@ -1,3 +1,6 @@
 [build]
 builder = "railpack"
 cmd = "cd frontend && npm ci && npm run build && cd .. && cargo build --release"
+
+[deploy]
+startCommand = "target/release/round-robin-quorum"
