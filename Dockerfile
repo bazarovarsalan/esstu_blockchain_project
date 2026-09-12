@@ -7,11 +7,12 @@ COPY scripts ./scripts
 RUN cargo build --release
 
 FROM debian:bookworm-slim
-RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y ca-certificates libssl3 && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 RUN mkdir -p /app/bin
 COPY --from=builder /app/target/release/round-robin-quorum /app/bin/round-robin-quorum
+RUN chmod +x /app/bin/round-robin-quorum
 ENV RRQ_ADDR=0.0.0.0:3000
 EXPOSE 3000
-CMD ["/app/bin/round-robin-quorum"]
+ENTRYPOINT ["/app/bin/round-robin-quorum"]
 
