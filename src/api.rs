@@ -11,6 +11,7 @@ use serde::Serialize;
 use tokio::sync::RwLock;
 use tower_http::{
     cors::{Any, CorsLayer},
+    services::{ServeDir, ServeFile},
     trace::TraceLayer,
 };
 
@@ -71,10 +72,18 @@ impl IntoResponse for ApiError {
     }
 }
 
+fn frontend_service() -> ServeDir<ServeFile> {
+    let directory =
+        std::env::var("RRQ_FRONTEND_DIR").unwrap_or_else(|_| "frontend/dist".to_string());
+    let index = std::path::Path::new(&directory).join("index.html");
+
+    ServeDir::new(directory).not_found_service(ServeFile::new(index))
+}
+
 pub fn app(network: Network) -> Router {
     let state = Arc::new(RwLock::new(network));
     Router::new()
-        .route("/", get(root))
+        .route("/api", get(root))
         .route("/api/health", get(health))
         .route("/api/state", get(get_state))
         .route("/api/integrity", get(get_integrity))
@@ -91,6 +100,7 @@ pub fn app(network: Network) -> Router {
                 .allow_methods(Any)
                 .allow_headers(Any),
         )
+        .fallback_service(frontend_service())
         .layer(TraceLayer::new_for_http())
         .with_state(state)
 }
@@ -187,4 +197,3 @@ async fn run_scenario(
 ) -> Result<Json<ScenarioReport>, ApiError> {
     Ok(Json(network.write().await.run_scenario(&name)?))
 }
-
