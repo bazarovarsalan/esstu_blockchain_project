@@ -1,7 +1,6 @@
 [build]
-builder = "railpack"
-cmd = "cd frontend && npm ci && npm run build && cd .. && cargo build --release"
+builder = "dockerfile"
 
 [deploy]
-startCommand = "/app/target/release/round-robin-quorum"
+startCommand = "/app/round-robin-quorum"
 
