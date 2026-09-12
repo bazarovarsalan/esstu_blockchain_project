@@ -14,5 +14,4 @@ COPY --from=builder /app/target/release/round-robin-quorum /app/bin/round-robin-
 RUN chmod +x /app/bin/round-robin-quorum
 ENV RRQ_ADDR=0.0.0.0:3000
 EXPOSE 3000
-ENTRYPOINT ["/app/bin/round-robin-quorum"]
 
