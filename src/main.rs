@@ -12,7 +12,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-    let address = std::env::var("RRQ_ADDR").unwrap_or_else(|_| "127.0.0.1:3000".to_string());
+    let address = std::env::var("RRQ_ADDR").unwrap_or_else(|_| "0.0.0.0:3000".to_string());
     let listener = TcpListener::bind(&address).await?;
     tracing::info!(%address, "RoundRobinQuorum server started");
     axum::serve(listener, api::app(Network::new()))
