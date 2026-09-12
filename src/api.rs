@@ -86,8 +86,8 @@ pub fn app(network: Network) -> Router {
         .route("/api/demo/reset", post(reset))
         .route("/api/demo/scenarios/{name}", post(run_scenario))
         .fallback_service(
-            ServeDir::new("frontend/dist")
-                .not_found_service(ServeFile::new("frontend/dist/index.html")),
+            ServeDir::new("dist")
+                .not_found_service(ServeFile::new("dist/index.html")),
         )
         .layer(
             CorsLayer::new()
@@ -171,3 +171,4 @@ async fn run_scenario(
 ) -> Result<Json<ScenarioReport>, ApiError> {
     Ok(Json(network.write().await.run_scenario(&name)?))
 }
+
