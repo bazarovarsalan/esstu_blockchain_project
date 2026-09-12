@@ -2,6 +2,14 @@ use round_robin_quorum::{Network, api};
 use tokio::net::TcpListener;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
+fn railway_compatible_address() -> String {
+    if let Ok(port) = std::env::var("PORT") {
+        return format!("0.0.0.0:{port}");
+    }
+
+    std::env::var("RRQ_ADDR").unwrap_or_else(|_| "0.0.0.0:3000".to_string())
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::registry()
@@ -12,7 +20,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-    let address = std::env::var("RRQ_ADDR").unwrap_or_else(|_| "0.0.0.0:3000".to_string());
+    let address = railway_compatible_address();
     let listener = TcpListener::bind(&address).await?;
     
     tracing::info!(%address, "RoundRobinQuorum server started");
@@ -26,4 +34,3 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     
     Ok(())
 }
-
