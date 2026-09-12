@@ -2,5 +2,5 @@
 builder = "dockerfile"
 
 [deploy]
-startCommand = "/app/round-robin-quorum"
+startCommand = "/app/bin/round-robin-quorum"
 
