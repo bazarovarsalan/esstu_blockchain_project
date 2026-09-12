@@ -22,15 +22,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let address = railway_compatible_address();
     let listener = TcpListener::bind(&address).await?;
-    
+
     tracing::info!(%address, "RoundRobinQuorum server started");
-    
+
     // Create network directly - api::app() handles Arc<RwLock> wrapping internally
     let network = Network::new();
     tracing::info!("Server is ready to accept requests");
-    
-    axum::serve(listener, api::app(network))
-        .await?;
-    
+
+    axum::serve(listener, api::app(network)).await?;
+
     Ok(())
 }

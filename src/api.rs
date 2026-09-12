@@ -77,7 +77,7 @@ fn frontend_service() -> ServeDir<ServeFile> {
         std::env::var("RRQ_FRONTEND_DIR").unwrap_or_else(|_| "frontend/dist".to_string());
     let index = std::path::Path::new(&directory).join("index.html");
 
-    ServeDir::new(directory).not_found_service(ServeFile::new(index))
+    ServeDir::new(directory).fallback(ServeFile::new(index))
 }
 
 pub fn app(network: Network) -> Router {
