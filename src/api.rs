@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use std::path::PathBuf;
 
 use axum::{
     Json, Router,
@@ -74,6 +75,20 @@ impl IntoResponse for ApiError {
 
 pub fn app(network: Network) -> Router {
     let state = Arc::new(RwLock::new(network));
+    
+    // Try multiple possible paths for the frontend dist
+    let dist_paths = vec![
+        PathBuf::from("/app/frontend/dist"),
+        PathBuf::from("frontend/dist"),
+        PathBuf::from("./frontend/dist"),
+    ];
+    
+    let dist_dir = dist_paths.into_iter()
+        .find(|p| p.exists())
+        .unwrap_or_else(|| PathBuf::from("/app/frontend/dist"));
+    
+    let fallback_path = dist_dir.join("index.html");
+    
     Router::new()
         .route("/api/health", get(health))
         .route("/api/state", get(get_state))
@@ -86,8 +101,8 @@ pub fn app(network: Network) -> Router {
         .route("/api/demo/reset", post(reset))
         .route("/api/demo/scenarios/{name}", post(run_scenario))
         .fallback_service(
-            ServeDir::new("dist")
-                .not_found_service(ServeFile::new("dist/index.html")),
+            ServeDir::new(&dist_dir)
+                .not_found_service(ServeFile::new(&fallback_path)),
         )
         .layer(
             CorsLayer::new()
